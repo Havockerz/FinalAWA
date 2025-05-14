@@ -9,85 +9,59 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\Staff;
+
+use App\Models\Customer;
+
 
 
 class RegisterController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Register Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles the registration of new users as well as their
-    | validation and creation. By default this controller uses a trait to
-    | provide this functionality without requiring any additional code.
-    |
-    */
-
     use RegistersUsers;
 
-    /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
-    //protected $redirectTo = '/home';
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('guest');
     }
 
     /**
-     * Get a validator for an incoming registration request.
+     * Show the registration form for customers.
      *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
+     * @return \Illuminate\View\View
      */
-    protected function validator(array $data)
-    {
-        return Validator::make($data, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-    }
-
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return \App\Models\User
-     */
-    protected function create(array $data)
-    {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => $data['role'] ?? 'customer',
-        ]);
-    }
-
     public function showCustomerRegisterForm()
     {
         return view('auth.custom-register', ['role' => 'customer']);
     }
 
+    /**
+     * Show the registration form for staff.
+     *
+     * @return \Illuminate\View\View
+     */
     public function showStaffRegisterForm()
     {
         return view('auth.custom-register', ['role' => 'staff']);
     }
 
+    /**
+     * Validate and register a customer.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function registerCustomer(Request $request)
     {
-        $this->validateRegister($request);
+        // Customer registration validation
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'phone_number' => 'required|string|max:15',
+            'address' => 'required|string|max:500',
+        ]);
 
+        // Create the user for the customer
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -95,31 +69,58 @@ class RegisterController extends Controller
             'role' => 'customer',
         ]);
 
+        // Create customer-specific data
+        $customer = new Customer();
+        $customer->user_id = $user->id; // Link customer to user
+        $customer->name = $request->name;
+        $customer->phone_number = $request->phone_number;
+        $customer->address = $request->address;
+        $customer->save(); // Save customer data
+
+        
+
+        // Log the customer in
         Auth::login($user);
+
+        // Redirect to customer dashboard
         return redirect('/customer/dashboard');
     }
 
+    /**
+     * Validate and register a staff member.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function registerStaff(Request $request)
     {
-        $this->validateRegister($request);
+        // Staff registration validation
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'branch' => ['required', 'in:Bandar Baru Bangi,Shah Alam,Gombak'],
+        ]);
 
+        // Create the user for staff
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'role' => 'staff',
+            'branch' => $request->branch, // Saving branch directly in the users table
         ]);
 
+        // Create the staff entry
+        Staff::create([
+            'user_id' => $user->id,  // Linking to the user table
+            'branch' => $request->branch, // Store branch in the staff table as well
+        ]);
+
+        // Log the staff in
         Auth::login($user);
-        return redirect('/staff/dashboard');
-    }
 
-    protected function validateRegister(Request $request)
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        // Redirect to staff dashboard
+        return redirect('/staff/dashboard');
     }
 }

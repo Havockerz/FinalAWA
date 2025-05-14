@@ -53,8 +53,11 @@
     <span class="me-2">{{ Auth::user()->name }}</span>
 
     @if(Auth::user()->role === 'customer')
-        <a href="{{ route('cars.index') }}" class="btn btn-sm btn-primary me-2">Rent Car</a>
+        <a href="{{ route('cars.index') }}" class="btn btn-sm btn-primary me-2">Rent Cars</a>
     @elseif(Auth::user()->role === 'staff')
+    
+            <a href="{{ route('cars.index') }}" class="btn btn-sm btn-primary me-2">View Cars</a>
+    <a href="{{ route('cars.create') }}" class="btn btn-sm btn-warning me-2">Add Cars</a>
         <a href="{{ route('bookings.index') }}" class="btn btn-sm btn-warning me-2">View Booking</a>
     @endif
 

@@ -7,12 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Car extends Model
 {
     protected $fillable = [
-        'name',
         'brand',
-        'model',
-        'year',
-        'description',
-        'price_per_day',
-        'status',
+    'model',
+    'year',
+    'price_per_day',
+    'license_plate', // ✅ MUST BE HERE
+    'branch',
+    'description',
+    'status',
     ];
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }
+
+

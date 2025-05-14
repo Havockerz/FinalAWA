@@ -29,6 +29,30 @@
             <input type="password" name="password_confirmation" class="form-control" required>
         </div>
 
+        @if ($role === 'staff')
+        <div class="mb-3">
+            <label>Branch</label>
+            <select name="branch" class="form-control" required>
+                <option value="">Select a branch</option>
+                <option value="Bandar Baru Bangi" {{ old('branch') == 'Bandar Baru Bangi' ? 'selected' : '' }}>Bandar Baru Bangi</option>
+                <option value="Shah Alam" {{ old('branch') == 'Shah Alam' ? 'selected' : '' }}>Shah Alam</option>
+                <option value="Gombak" {{ old('branch') == 'Gombak' ? 'selected' : '' }}>Gombak</option>
+            </select>
+        </div>
+        @endif
+
+        @if ($role === 'customer')
+        <div class="mb-3">
+            <label>Phone Number</label>
+            <input type="text" name="phone_number" class="form-control" required value="{{ old('phone_number') }}">
+        </div>
+
+        <div class="mb-3">
+            <label>Address</label>
+            <textarea name="address" class="form-control" required>{{ old('address') }}</textarea>
+        </div>
+        @endif
+
         <button type="submit" class="btn btn-primary w-100">
             Register as {{ ucfirst($role) }}
         </button>

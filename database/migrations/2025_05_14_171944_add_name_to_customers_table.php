@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        Schema::table('customers', function (Blueprint $table) {
+        $table->string('name')->after('id'); // You can change the position if needed
+    });
     }
 
     /**
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff');
+        Schema::table('customers', function (Blueprint $table) {
+        $table->dropColumn('name');
+    });
     }
 };

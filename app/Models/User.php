@@ -46,4 +46,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function staff()
+{
+    return $this->hasOne(Staff::class);
+}
+
+public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
 }
