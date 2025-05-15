@@ -8,8 +8,14 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <form action="{{ route('cars.store') }}" method="POST">
+    <form action="{{ route('cars.store') }}" method="POST" enctype="multipart/form-data">
+
         @csrf
+
+        <div class="mb-3">
+        <label for="picture" class="form-label">Car Picture</label>
+        <input type="file" class="form-control" id="picture" name="picture" accept="image/*">
+    </div>
 
         <div class="mb-3">
             <label for="brand" class="form-label">Car Brand</label>

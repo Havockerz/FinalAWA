@@ -15,6 +15,8 @@ class Car extends Model
     'branch',
     'description',
     'status',
+    'staff_id',
+    'picture',
     ];
 
     public function bookings()

@@ -9,6 +9,8 @@ class Staff extends Model
 {
     use HasFactory;
 
+    protected $table = 'staff'; // 👈 Tell Laravel to use 'staff' table
+
     protected $fillable = ['user_id', 'branch'];
 
     public function user()

@@ -8,6 +8,18 @@
         @csrf
         @method('PUT')
 
+
+         <div class="form-group mb-3">
+        <label for="picture">Car Picture</label>
+        @if($car->picture)
+            <div class="mb-2">
+                <img src="{{ asset('storage/' . $car->picture) }}" alt="Car Picture" style="max-width: 200px;">
+            </div>
+        @endif
+        <input type="file" name="picture" id="picture" class="form-control">
+        <small class="form-text text-muted">Upload a new picture to replace the current one.</small>
+    </div>
+    
         <div class="form-group mb-3">
             <label for="brand">Brand</label>
             <input type="text" name="brand" id="brand" class="form-control" value="{{ old('brand', $car->brand) }}" required>

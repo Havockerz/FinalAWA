@@ -47,3 +47,10 @@ Route::get('/staff/dashboard', function () {
 Route::get('/bookings/create/{car}', [App\Http\Controllers\BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings/store', [App\Http\Controllers\BookingController::class, 'store'])->name('bookings.store');
 
+Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve');
+Route::middleware(['auth', 'role:customer'])->group(function () {
+    Route::get('/my-bookings', [BookingController::class, 'myBookings'])->name('bookings.my');
+});
+
+Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
+

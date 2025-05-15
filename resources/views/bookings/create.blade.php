@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <div class="container">
     <h2 class="mb-4">Rent {{ $car->brand }} {{ $car->model }}</h2>
 
@@ -25,19 +29,52 @@
 
         <input type="hidden" name="car_id" value="{{ $car->id }}">
 
-        <div class="mb-3">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" name="start_date" class="form-control" required min="{{ date('Y-m-d') }}">
-        </div>
+        <div class="form-group">
+    <label for="start_date">Start Date</label>
+    <input type="text" id="start_date" name="start_date" class="form-control" required>
+    <p class="text-muted">* Bookings must be made at least 2 days in advance.</p>
+</div>
 
-        <div class="mb-3">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="date" name="end_date" class="form-control" required min="{{ date('Y-m-d') }}">
-        </div>
+
+<div class="form-group">
+    <label for="end_date">End Date</label>
+    <input type="text" id="end_date" name="end_date" class="form-control" required>
+</div>
+
+<script>
+    const bookedRanges = @json($bookedDates->map(function($b) {
+        return ['from' => $b->start_date, 'to' => $b->end_date];
+    }));
+
+    const twoDaysFromNow = new Date();
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+
+    flatpickr("#start_date", {
+        minDate: twoDaysFromNow,
+        disable: bookedRanges,
+        dateFormat: "Y-m-d"
+    });
+
+    flatpickr("#end_date", {
+        minDate: twoDaysFromNow,
+        disable: bookedRanges,
+        dateFormat: "Y-m-d"
+    });
+</script>
+
+
+
 
         
 
         <button type="submit" class="btn btn-success">Confirm Booking</button>
     </form>
 </div>
+
+<script>
+    const bookedRanges = @json($bookedDates->map(function($b) {
+        return ['from' => $b->start_date, 'to' => $b->end_date];
+    }));
+</script>
+
 @endsection

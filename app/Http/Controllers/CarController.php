@@ -5,24 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Car;  
 use Illuminate\Support\Facades\Auth;
+use App\Models\Staff;
 
 class CarController extends Controller
 {
     public function index(Request $request)
-    {
-        // Get the branch from the query string, if present
-        $branch = $request->get('branch');
+{
+    $query = Car::query();
 
-        // If a branch is selected, filter the cars by the branch
-        if ($branch) {
-            $cars = Car::where('branch', $branch)->get();
-        } else {
-            // Otherwise, get all cars
-            $cars = Car::all();
-        }
-
-        return view('cars.index', compact('cars'));
+    // Filter by branch
+    if ($request->filled('branch')) {
+        $query->where('branch', $request->branch);
     }
+
+    // Search by brand or model
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('brand', 'like', "%$search%")
+              ->orWhere('model', 'like', "%$search%");
+        });
+    }
+
+    $cars = $query->get();
+
+    return view('cars.index', compact('cars'));
+}
+
 
 public function create()
     {
@@ -36,26 +45,44 @@ public function create()
         'brand' => 'required|string|max:255',
         'model' => 'required|string|max:255',
         'year' => 'required|integer',
+        'license_plate' => 'required|string|max:20|unique:cars',
         'price_per_day' => 'required|numeric',
-        'license_plate' => 'required|string|unique:cars',
         'description' => 'nullable|string',
+        'picture' => 'nullable|image|max:2048',  // Validate image file
     ]);
 
-    $user = Auth::user();
-    $branch = $user->staff->branch ?? 'Unknown'; // fallback in case no relation
+    $staff = Staff::where('user_id', auth()->id())->first();
+    if (!$staff) {
+        return back()->with('error', 'Only staff can add cars.');
+    }
+
+    $branch = $staff->branch;
+
+    // Handle picture upload if exists
+    $picturePath = null;
+    if ($request->hasFile('picture')) {
+        $picturePath = $request->file('picture')->store('car_pictures', 'public');
+    }
 
     Car::create([
         'brand' => $request->brand,
         'model' => $request->model,
         'year' => $request->year,
-        'price_per_day' => $request->price_per_day,
         'license_plate' => $request->license_plate,
-        'branch' => $branch, // ✅ Set from logged-in staff
+        'price_per_day' => $request->price_per_day,
+        'branch' => $branch,
+        'status' => 'available',
+        'staff_id' => $staff->id,
         'description' => $request->description,
+        'picture' => $picturePath,
     ]);
 
-    return redirect()->route('cars.create')->with('success', 'Car added successfully!');
+    return redirect()->route('cars.index')->with('success', 'Car added successfully.');
 }
+
+
+
+
 
 public function edit($carId)
 {
@@ -68,7 +95,6 @@ public function edit($carId)
 
 public function update(Request $request, $carId)
 {
-    // Validate the form data, excluding 'branch' from validation
     $request->validate([
         'brand' => 'required|string|max:255',
         'model' => 'required|string|max:255',
@@ -76,24 +102,38 @@ public function update(Request $request, $carId)
         'price_per_day' => 'required|numeric',
         'license_plate' => 'required|string|unique:cars,license_plate,' . $carId,
         'description' => 'nullable|string',
-        // No need to validate 'branch' since it's read-only
+        'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',  // Validate image if uploaded
     ]);
 
-    // Find the car and update its data, excluding the branch field
     $car = Car::findOrFail($carId);
-    $car->update([
+
+    $data = [
         'brand' => $request->brand,
         'model' => $request->model,
         'year' => $request->year,
         'price_per_day' => $request->price_per_day,
         'license_plate' => $request->license_plate,
         'description' => $request->description,
-        // Do not update the branch, it remains the same as it was
-    ]);
+    ];
 
-    // Redirect back to the cars index page with success message
+    if ($request->hasFile('picture')) {
+        // Delete old picture if exists
+        if ($car->picture && \Storage::disk('public')->exists($car->picture)) {
+            \Storage::disk('public')->delete($car->picture);
+        }
+
+        // Store new picture and update path in data
+        $path = $request->file('picture')->store('car_pictures', 'public');
+        $data['picture'] = $path;
+    }
+
+    $car->update($data);
+
     return redirect()->route('cars.index')->with('success', 'Car details updated successfully!');
 }
+
+
+
 
 
 

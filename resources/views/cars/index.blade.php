@@ -5,21 +5,31 @@
     <h1 class="mb-4">Available Cars</h1>
 
     {{-- Filter Form --}}
-    <form action="{{ route('cars.index') }}" method="GET" class="mb-4">
-        <div class="row">
-            <div class="col-md-4">
-                <select name="branch" class="form-control">
-                    <option value="">All Branches</option>
-                    <option value="Bandar Baru Bangi" {{ request('branch') === 'Bandar Baru Bangi' ? 'selected' : '' }}>Bandar Baru Bangi</option>
-                    <option value="Shah Alam" {{ request('branch') === 'Shah Alam' ? 'selected' : '' }}>Shah Alam</option>
-                    <option value="Gombak" {{ request('branch') === 'Gombak' ? 'selected' : '' }}>Gombak</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
-            </div>
+    {{-- Filter Form --}}
+<form action="{{ route('cars.index') }}" method="GET" class="mb-4">
+    <div class="row">
+        {{-- Branch filter --}}
+        <div class="col-md-4">
+            <select name="branch" class="form-control">
+                <option value="">All Branches</option>
+                <option value="Bandar Baru Bangi" {{ request('branch') === 'Bandar Baru Bangi' ? 'selected' : '' }}>Bandar Baru Bangi</option>
+                <option value="Shah Alam" {{ request('branch') === 'Shah Alam' ? 'selected' : '' }}>Shah Alam</option>
+                <option value="Gombak" {{ request('branch') === 'Gombak' ? 'selected' : '' }}>Gombak</option>
+            </select>
         </div>
-    </form>
+
+        {{-- Search bar --}}
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Search by brand or model..." value="{{ request('search') }}">
+        </div>
+
+        {{-- Submit button --}}
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
 
     @if(session('success'))
         <div class="alert alert-success">
@@ -33,6 +43,10 @@
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 shadow-sm">
                         <div class="card-body">
+                            @if($car->picture)
+    <img src="{{ asset('storage/' . $car->picture) }}" alt="Car Picture" class="img-fluid mb-2" style="max-height: 150px;">
+@endif
+
                             <h5 class="card-title">{{ $car->brand }} {{ $car->model }} ({{ $car->year }})</h5>
                             <p class="card-text">
                                 <strong>License Plate:</strong> {{ $car->license_plate }}<br>

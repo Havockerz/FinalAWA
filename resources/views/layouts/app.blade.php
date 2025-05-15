@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'EasyCarEnterprise') }}</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -20,9 +20,18 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
+                <a class="navbar-brand" href="
+    @if(auth()->check() && auth()->user()->role === 'customer')
+        {{ url('/customer/dashboard') }}
+    @elseif(auth()->check() && auth()->user()->role === 'staff')
+        {{ url('/staff/dashboard') }}
+    @else
+        {{ url('/') }}
+    @endif
+">
+    {{ config('app.name', 'EasyCarEnterprise') }}
+</a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -53,6 +62,7 @@
     <span class="me-2">{{ Auth::user()->name }}</span>
 
     @if(Auth::user()->role === 'customer')
+    <a href="{{ route('bookings.my') }}" class="btn btn-sm btn-primary me-2">My Booking</a>
         <a href="{{ route('cars.index') }}" class="btn btn-sm btn-primary me-2">Rent Cars</a>
     @elseif(Auth::user()->role === 'staff')
     
